@@ -10,12 +10,12 @@ export default function App() {
 
   useEffect(()=>{
 
-    async function carrega() {
+    // async function carrega() {
       
-      const result = await api.get('/');
-      console.log(result, "o resultado");
-    }
-    carrega();
+    //   const result = await api.get('/');
+    //   console.log(result, "o resultado");
+    // }
+    // carrega();
 
   },[])
 
@@ -39,39 +39,38 @@ export default function App() {
 
     const result = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: true,
-      quality:0.3,
+      quality:0.7,
       aspect: [4, 3],
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      base64: true
     });
 
     const { uri } = result;
 
-    const novaImagem = {
-      filename: String(Date.now()),
-      type: "image/jpg",
-      uri: result.uri
-    };
-
     setPreview(result.uri);
-    setImage(novaImagem);
+    setImage(result);
 
-    console.log(novaImagem, "image saved");
 
   }
 
   async function handleSubmit() {
-      console.log("submit?");
-      const data = new FormData();
+    const formData = new FormData();
+    
+    formData.append('image', {
+      name: image.fileName || `${Date.now()}.jpg`,
+      type: image.type,
+      uri:
+      Platform.OS === 'android'
+      ? image.uri
+      : image.uri.replace('file://', ''),
+      });
+    const {data} = await api.post(`image`, formData, {
+      headers: {
+      'Content-Type': 'multipart/form-data',
+      },
+    });
 
-      data.append('image', image);
-
-      try {
-        const result = await api.post('image', data);
-        console.log(result);
-      } catch (error) {
-        console.log(error);
-      }
-
+    console.log(formData);
       
   }
 
